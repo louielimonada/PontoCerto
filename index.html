@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HoraCerta - Controle de Horas Trabalhadas</title>
+    <title>PontoCerto - Controle de Horas Trabalhadas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -53,13 +53,12 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <header class="mb-10 text-center">
             <h1 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-2">
-                <i class="fas fa-clock mr-2"></i>HoraCerta
+                <i class="fas fa-clock mr-2"></i>PontoCerto
             </h1>
             <p class="text-gray-600">Controle suas horas trabalhadas e cálculos de pagamento</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Seção de Registro -->
             <div class="lg:col-span-2">
                 <div class="card bg-white rounded-lg p-6 mb-6">
                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">
@@ -126,7 +125,6 @@
                     </div>
                 </div>
 
-                <!-- Seção de Resultados -->
                 <div class="card bg-white rounded-lg p-6">
                     <h2 class="text-xl font-semibold mb-4 text-indigo-700">
                         <i class="fas fa-calculator mr-2"></i>Resumo do Dia
@@ -156,7 +154,6 @@
                 </div>
             </div>
 
-            <!-- Seção de Histórico -->
             <div>
                 <div class="card bg-white rounded-lg p-6 h-full">
                     <div class="flex justify-between items-center mb-4">
@@ -518,104 +515,104 @@
                 const doc = new jsPDF();
                 
                 // Cabeçalho da folha de ponto
-            doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
-            doc.text('Folha de Ponto', 105, 15, { align: 'center' });
-            
-            doc.setFontSize(12);
-            doc.text('Nome: ___________________________', 20, 25);
-            doc.text(`Período: ${document.getElementById('startDate').value || 'Início'} a ${document.getElementById('endDate').value || 'Fim'}`, 20, 35);
-            
-            // Linha separadora (simplificada)
-            doc.setDrawColor(0);
-            doc.setLineWidth(0.5);
-            doc.line(13, 45, 197, 45);
-            
-            // Cabeçalho da tabela
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'bold');
-            doc.text('Data', 14, 55);
-            doc.text('Dia', 40, 55);
-            doc.text('Entrada', 60, 55);
-            doc.text('Saída', 80, 55);
-            doc.text('Pausa', 100, 55);
-            doc.text('Horas', 120, 55);
-            doc.text('Valor', 140, 55);
-            doc.text('Total', 160, 55);
-            
-            // Linha do cabeçalho
-            doc.line(13, 58, 197, 58);
-            
-            // Dados
-            doc.setFont(undefined, 'normal');
-            const entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
-            let y = 65;
-            let totalEarned = 0;
-            
-            entries.forEach(entry => {
-                if (y > 250) { // Nova página se necessário
-                    doc.addPage();
-                    y = 20;
-                    // Repetir cabeçalho
-                    doc.setFontSize(10);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Data', 14, y);
-                    doc.text('Dia', 40, y);
-                    doc.text('Entrada', 60, y);
-                    doc.text('Saída', 80, y);
-                    doc.text('Pausa', 100, y);
-                    doc.text('Horas', 120, y);
-                    doc.text('Valor', 140, y);
-                    doc.text('Total', 160, y);
-                    doc.line(13, y+3, 197, y+3);
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.text('Folha de Ponto', 105, 15, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.text('Nome: ___________________________', 20, 25);
+                doc.text(`Período: ${document.getElementById('startDate').value || 'Início'} a ${document.getElementById('endDate').value || 'Fim'}`, 20, 35);
+                
+                // Linha separadora (simplificada)
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.5);
+                doc.line(13, 45, 197, 45);
+                
+                // Cabeçalho da tabela
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.text('Data', 14, 55);
+                doc.text('Dia', 40, 55);
+                doc.text('Entrada', 60, 55);
+                doc.text('Saída', 80, 55);
+                doc.text('Pausa', 100, 55);
+                doc.text('Horas', 120, 55);
+                doc.text('Valor', 140, 55);
+                doc.text('Total', 160, 55);
+                
+                // Linha do cabeçalho
+                doc.line(13, 58, 197, 58);
+                
+                // Dados
+                doc.setFont(undefined, 'normal');
+                const entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
+                let y = 65;
+                let totalEarned = 0;
+                
+                entries.forEach(entry => {
+                    if (y > 250) { // Nova página se necessário
+                        doc.addPage();
+                        y = 20;
+                        // Repetir cabeçalho
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Data', 14, y);
+                        doc.text('Dia', 40, y);
+                        doc.text('Entrada', 60, y);
+                        doc.text('Saída', 80, y);
+                        doc.text('Pausa', 100, y);
+                        doc.text('Horas', 120, y);
+                        doc.text('Valor', 140, y);
+                        doc.text('Total', 160, y);
+                        doc.line(13, y+3, 197, y+3);
+                        y += 10;
+                    }
+                    
+                    const rowData = [
+                        formatDate(entry.date),
+                        getDayTypeName(entry.dayType),
+                        entry.startTime,
+                        entry.endTime,
+                        `${entry.breakTime}m`,
+                        entry.totalHours,
+                        `R$ ${entry.hourlyRate.toFixed(2)}`,
+                        `R$ ${entry.totalValue.toFixed(2)}`
+                    ];
+                    
+                    colX = 15;
+                    rowData.forEach((text, i) => {
+                        doc.text(text, colX, y);
+                        colX += i < 3 ? 20 : 25;
+                    });
+                    
+                    totalEarned += entry.totalValue;
                     y += 10;
-                }
-                
-                const rowData = [
-                    formatDate(entry.date),
-                    getDayTypeName(entry.dayType),
-                    entry.startTime,
-                    entry.endTime,
-                    `${entry.breakTime}m`,
-                    entry.totalHours,
-                    `R$ ${entry.hourlyRate.toFixed(2)}`,
-                    `R$ ${entry.totalValue.toFixed(2)}`
-                ];
-                
-                colX = 15;
-                rowData.forEach((text, i) => {
-                    doc.text(text, colX, y);
-                    colX += i < 3 ? 20 : 25;
                 });
                 
-                totalEarned += entry.totalValue;
-                y += 10;
-            });
-            
-            // Totalizador e assinatura
-            doc.line(13, y+5, 197, y+5);
-            doc.setFont(undefined, 'bold');
-            // Totalizador
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('TOTAL:', 120, y+10);
-            doc.text(`R$ ${totalEarned.toFixed(2)}`, 160, y+10);
-            
-            // Assinatura
-            doc.text('____________________________', 60, y+30);
-            doc.text('Assinatura do Responsável', 75, y+40);
-            
-            try {
-                // Salvar o PDF
-                doc.save(`FolhaPonto_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
+                // Totalizador e assinatura
+                doc.line(13, y+5, 197, y+5);
+                doc.setFont(undefined, 'bold');
+                // Totalizador
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('TOTAL:', 120, y+10);
+                doc.text(`R$ ${totalEarned.toFixed(2)}`, 160, y+10);
+                
+                // Assinatura
+                doc.text('____________________________', 60, y+30);
+                doc.text('Assinatura do Responsável', 75, y+40);
+                
+                try {
+                    // Salvar o PDF
+                    doc.save(`FolhaPonto_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
+                } catch (e) {
+                    alert('Erro ao gerar PDF: ' + e.message);
+                    console.error(e);
+                }
             } catch (e) {
-                alert('Erro ao gerar PDF: ' + e.message);
+                alert('Ocorreu um erro: ' + e.message);
                 console.error(e);
             }
-        } catch (e) {
-            alert('Ocorreu um erro: ' + e.message);
-            console.error(e);
-        }
         }
     </script>
 </body>
