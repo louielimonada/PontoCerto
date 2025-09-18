@@ -206,10 +206,15 @@
     <script>
         // Configuração inicial
         document.addEventListener('DOMContentLoaded', function() {
-            // Set today's date as default
+            // Definir data
             const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0];
+            const formattedDate = today.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                .split('/')
+                .reverse()
+                .join('-'); // yyyy-mm-dd
             document.getElementById('workDate').value = formattedDate;
+
+
 
             // Carrega o histórico ao iniciar
             loadHistory();
@@ -303,9 +308,10 @@
             }
             
             // Calcular horas trabalhadas
-            const start = new Date(`2000-01-01T${startTime}`);
-            const end = new Date(`2000-01-01T${endTime}`);
-            
+            const startTime = "08:00";
+            const [hours, minutes] = startTime.split(':');
+            const start = new Date(2000, 0, 1, parseInt(hours), parseInt(minutes)); // mês = 0 (Janeiro)
+
             // Se horário final for menor que o inicial, assume que é no dia seguinte
             let diffMs = end - start;
             if (diffMs < 0) {
