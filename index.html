@@ -1,625 +1,365 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PontoCerto - Controle de Horas Trabalhadas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-        }
-        .card {
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .card:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary {
-            background-color: #4f46e5;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #4338ca;
-        }
-        .day-normal { background-color: #e0f2fe; }
-        .day-holiday { background-color: #fee2e2; }
-        .day-sunday { background-color: #fef3c7; }
-        #timerDisplay {
-            font-family: 'Orbitron', monospace;
-            font-size: 3rem;
-            font-weight: 700;
-            color: #4f46e5;
-            background: #f5f7fa;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-            min-width: 250px;
-            text-align: center;
-        }
-        .history-item:hover {
-            transform: translateX(5px);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PontoCerto - Controle de Horas Trabalhadas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f7fa; }
+    .card { transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    .card:hover { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+    .btn-primary { background-color: #4f46e5; transition: all 0.3s ease; }
+    .btn-primary:hover { background-color: #4338ca; }
+    .day-normal { background-color: #e0f2fe; }
+    .day-holiday { background-color: #fee2e2; }
+    .day-sunday { background-color: #fef3c7; }
+    #timerDisplay { font-family: 'Orbitron', monospace; font-size: 3rem; font-weight: 700; color: #4f46e5; background: #f5f7fa; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: inline-block; min-width: 250px; text-align: center; }
+    .history-item:hover { transform: translateX(5px); }
+</style>
 </head>
 <body class="bg-gray-50">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <header class="mb-10 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-2">
-                <i class="fas fa-clock mr-2"></i>PontoCerto
-            </h1>
-            <p class="text-gray-600">Controle suas horas trabalhadas e cálculos de pagamento</p>
-        </header>
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+<header class="mb-10 text-center">
+<h1 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-2"><i class="fas fa-clock mr-2"></i>PontoCerto</h1>
+<p class="text-gray-600">Controle suas horas trabalhadas e cálculos de pagamento</p>
+</header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
-                <div class="card bg-white rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-indigo-700">
-                        <i class="fas fa-plus-circle mr-2"></i>Registrar Jornada
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                            <input type="date" id="workDate" class="w-full p-2 border border-gray-300 rounded-md" value="">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Dia</label>
-                            <select id="dayType" class="w-full p-2 border border-gray-300 rounded-md">
-                                <option value="normal">Dia Normal</option>
-                                <option value="sunday">Domingo</option>
-                                <option value="holiday">Feriado</option>
-                            </select>
-                        </div>
-                    </div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2">
+<div class="card bg-white rounded-lg p-6 mb-6">
+<h2 class="text-xl font-semibold mb-4 text-indigo-700"><i class="fas fa-plus-circle mr-2"></i>Registrar Jornada</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de Entrada</label>
-                            <input type="time" id="startTime" class="w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de Saída</label>
-                            <input type="time" id="endTime" class="w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                    </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+<input type="date" id="workDate" class="w-full p-2 border border-gray-300 rounded-md" value="">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Dia</label>
+<select id="dayType" class="w-full p-2 border border-gray-300 rounded-md">
+<option value="normal">Dia Normal</option>
+<option value="sunday">Domingo</option>
+<option value="holiday">Feriado</option>
+</select>
+</div>
+</div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Pausas (em minutos)</label>
-                        <input type="number" id="breakTime" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md">
-                    </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Hora de Entrada</label>
+<input type="time" id="startTime" class="w-full p-2 border border-gray-300 rounded-md">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Hora de Saída</label>
+<input type="time" id="endTime" class="w-full p-2 border border-gray-300 rounded-md">
+</div>
+</div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor por Hora (R$)</label>
-                        <input type="number" id="hourlyRate" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="50.00">
-                    </div>
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-1">Pausas (em minutos)</label>
+<input type="number" id="breakTime" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+</div>
 
-                    <div class="flex justify-between">
-                        <button id="startTimerBtn" class="btn-primary text-white px-4 py-2 rounded-md">
-                            <i class="fas fa-play mr-2"></i>Iniciar Timer
-                        </button>
-                        <button id="saveEntryBtn" class="btn-primary text-white px-4 py-2 rounded-md">
-                            <i class="fas fa-save mr-2"></i>Salvar Registro
-                        </button>
-                    </div>
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-1">Valor por Hora (R$)</label>
+<input type="number" id="hourlyRate" min="0" step="0.01" class="w-full p-2 border border-gray-300 rounded-md" value="50.00">
+</div>
 
-                    <div id="timerSection" class="mt-4 hidden">
-                        <div class="text-center">
-                            <div id="timerDisplay" class="mb-6">00:00:00</div>
-                            <div class="flex justify-center space-x-4">
-                                <button id="stopTimerBtn" class="btn-primary text-white px-6 py-3 rounded-lg text-lg">
-                                    <i class="fas fa-stop mr-2"></i>Parar Timer
-                                </button>
-                                <button id="resetTimerBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-lg">
-                                    <i class="fas fa-redo mr-2"></i>Resetar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="flex justify-between">
+<button id="startTimerBtn" class="btn-primary text-white px-4 py-2 rounded-md"><i class="fas fa-play mr-2"></i>Iniciar Timer</button>
+<button id="saveEntryBtn" class="btn-primary text-white px-4 py-2 rounded-md"><i class="fas fa-save mr-2"></i>Salvar Registro</button>
+</div>
 
-                <div class="card bg-white rounded-lg p-6">
-                    <h2 class="text-xl font-semibold mb-4 text-indigo-700">
-                        <i class="fas fa-calculator mr-2"></i>Resumo do Dia
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="bg-blue-50 p-4 rounded-lg text-center">
-                            <p class="text-sm text-gray-600">Horas Trabalhadas</p>
-                            <p id="totalHours" class="text-2xl font-bold text-blue-700">0h 0m</p>
-                        </div>
-                        <div class="bg-yellow-50 p-4 rounded-lg text-center">
-                            <p class="text-sm text-gray-600">Horas com Multiplicador</p>
-                            <p id="multipliedHours" class="text-2xl font-bold text-yellow-700">0h 0m</p>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-lg text-center">
-                            <p class="text-sm text-gray-600">Valor Total</p>
-                            <p id="totalValue" class="text-2xl font-bold text-green-700">R$ 0,00</p>
-                        </div>
-                    </div>
+<div id="timerSection" class="mt-4 hidden">
+<div class="text-center">
+<div id="timerDisplay" class="mb-6">00:00:00</div>
+<div class="flex justify-center space-x-4">
+<button id="stopTimerBtn" class="btn-primary text-white px-6 py-3 rounded-lg text-lg"><i class="fas fa-stop mr-2"></i>Parar Timer</button>
+<button id="resetTimerBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-lg"><i class="fas fa-redo mr-2"></i>Resetar</button>
+</div>
+</div>
+</div>
+</div>
 
-                    <div class="mt-4">
-                        <h3 class="text-lg font-medium mb-2 text-gray-700">Detalhes do Cálculo</h3>
-                        <div id="calculationDetails" class="text-sm text-gray-600 p-3 bg-gray-50 rounded">
-                            Preencha os horários e valor por hora para ver o cálculo detalhado.
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="card bg-white rounded-lg p-6">
+<h2 class="text-xl font-semibold mb-4 text-indigo-700"><i class="fas fa-calculator mr-2"></i>Resumo do Dia</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+<div class="bg-blue-50 p-4 rounded-lg text-center">
+<p class="text-sm text-gray-600">Horas Trabalhadas</p>
+<p id="totalHours" class="text-2xl font-bold text-blue-700">0h 0m</p>
+</div>
+<div class="bg-yellow-50 p-4 rounded-lg text-center">
+<p class="text-sm text-gray-600">Horas com Multiplicador</p>
+<p id="multipliedHours" class="text-2xl font-bold text-yellow-700">0h 0m</p>
+</div>
+<div class="bg-green-50 p-4 rounded-lg text-center">
+<p class="text-sm text-gray-600">Valor Total</p>
+<p id="totalValue" class="text-2xl font-bold text-green-700">R$ 0,00</p>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="text-lg font-medium mb-2 text-gray-700">Detalhes do Cálculo</h3>
+<div id="calculationDetails" class="text-sm text-gray-600 p-3 bg-gray-50 rounded">
+Preencha os horários e valor por hora para ver o cálculo detalhado.
+</div>
+</div>
+</div>
+</div>
 
-            <div>
-                <div class="card bg-white rounded-lg p-6 h-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-indigo-700">
-                            <i class="fas fa-history mr-2"></i>Histórico
-                        </h2>
-                        <button id="exportPdfBtn" class="text-sm bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700">
-                            <i class="fas fa-file-pdf mr-1"></i>Exportar PDF
-                        </button>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <select id="historyFilter" class="w-full p-2 border border-gray-300 rounded-md mb-2">
-                            <option value="all">Todos os registros</option>
-                            <option value="normal">Dias normais</option>
-                            <option value="sunday">Domingos</option>
-                            <option value="holiday">Feriados</option>
-                            <option value="last7">Últimos 7 dias</option>
-                            <option value="month">Este mês</option>
-                            <option value="range">Período específico</option>
-                        </select>
-                        <div id="dateRangeInputs" class="hidden">
-                            <div class="grid grid-cols-2 gap-2">
-                                <input type="date" id="startDate" class="p-2 border border-gray-300 rounded-md">
-                                <input type="date" id="endDate" class="p-2 border border-gray-300 rounded-md">
-                            </div>
-                            <button id="applyDateRange" class="w-full mt-2 bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-1"></i>Aplicar Filtro
-                            </button>
-                        </div>
-                    </div>
+<div>
+<div class="card bg-white rounded-lg p-6 h-full">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-semibold text-indigo-700"><i class="fas fa-history mr-2"></i>Histórico</h2>
+<button id="exportPdfBtn" class="text-sm bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"><i class="fas fa-file-pdf mr-1"></i>Exportar PDF</button>
+</div>
 
-                    <div class="mb-4 text-right">
-                        <div class="text-sm text-gray-600">
-                            <span id="totalWorkedHours">Total horas: 0h</span> | 
-                            <span id="totalEarned">Total ganho: R$0,00</span>
-                        </div>
-                    </div>
+<div class="mb-4">
+<select id="historyFilter" class="w-full p-2 border border-gray-300 rounded-md mb-2">
+<option value="all">Todos os registros</option>
+<option value="normal">Dias normais</option>
+<option value="sunday">Domingos</option>
+<option value="holiday">Feriados</option>
+<option value="last7">Últimos 7 dias</option>
+<option value="month">Este mês</option>
+<option value="range">Período específico</option>
+</select>
+<div id="dateRangeInputs" class="hidden">
+<div class="grid grid-cols-2 gap-2">
+<input type="date" id="startDate" class="p-2 border border-gray-300 rounded-md">
+<input type="date" id="endDate" class="p-2 border border-gray-300 rounded-md">
+</div>
+<button id="applyDateRange" class="w-full mt-2 bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"><i class="fas fa-filter mr-1"></i>Aplicar Filtro</button>
+</div>
+</div>
 
-                    <div id="historyList" class="overflow-y-auto max-h-[500px]">
-                        <div class="text-center text-gray-500 py-4">
-                            Nenhum registro encontrado
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="mb-4 text-right">
+<div class="text-sm text-gray-600">
+<span id="totalWorkedHours">Total horas: 0h</span> | 
+<span id="totalEarned">Total ganho: R$0,00</span>
+</div>
+</div>
 
-    <script>
-        // Configuração inicial
-        document.addEventListener('DOMContentLoaded', function() {
-            // Definir data
-            const today = new Date();
-            const formattedDate = today.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-                .split('/')
-                .reverse()
-                .join('-'); // yyyy-mm-dd
-            document.getElementById('workDate').value = formattedDate;
+<div id="historyList" class="overflow-y-auto max-h-[500px]">
+<div class="text-center text-gray-500 py-4">Nenhum registro encontrado</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data do dia local
+    const today = new Date();
+    const formattedDate = today.getFullYear() + '-' + 
+                          String(today.getMonth() + 1).padStart(2,'0') + '-' + 
+                          String(today.getDate()).padStart(2,'0');
+    document.getElementById('workDate').value = formattedDate;
 
+    loadHistory();
 
-            // Carrega o histórico ao iniciar
-            loadHistory();
-            
-            // Event listeners
-            document.getElementById('startTimerBtn').addEventListener('click', startTimer);
-            document.getElementById('stopTimerBtn').addEventListener('click', stopTimer);
-            document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
-            document.getElementById('saveEntryBtn').addEventListener('click', saveEntry);
-            document.getElementById('historyFilter').addEventListener('change', function() {
-                const showDateRange = this.value === 'range';
-                document.getElementById('dateRangeInputs').classList.toggle('hidden', !showDateRange);
-                if (!showDateRange) loadHistory();
-            });
-            document.getElementById('applyDateRange').addEventListener('click', loadHistory);
-            document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
-            
-            // Atualiza cálculo quando os campos mudam
-            ['startTime', 'endTime', 'breakTime', 'hourlyRate', 'dayType'].forEach(id => {
-                document.getElementById(id).addEventListener('change', calculateWork);
-            });
+    ['startTime', 'endTime', 'breakTime', 'hourlyRate', 'dayType'].forEach(id => {
+        document.getElementById(id).addEventListener('change', calculateWork);
+    });
+
+    document.getElementById('startTimerBtn').addEventListener('click', startTimer);
+    document.getElementById('stopTimerBtn').addEventListener('click', stopTimer);
+    document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+    document.getElementById('saveEntryBtn').addEventListener('click', saveEntry);
+    document.getElementById('historyFilter').addEventListener('change', function() {
+        const showDateRange = this.value === 'range';
+        document.getElementById('dateRangeInputs').classList.toggle('hidden', !showDateRange);
+        if (!showDateRange) loadHistory();
+    });
+    document.getElementById('applyDateRange').addEventListener('click', loadHistory);
+    document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+});
+
+// Timer
+let timerInterval, timerSeconds = 0, timerRunning = false;
+
+function startTimer() {
+    if (!timerRunning) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2,'0');
+        const minutes = String(now.getMinutes()).padStart(2,'0');
+        document.getElementById('startTime').value = `${hours}:${minutes}`;
+        timerRunning = true;
+        document.getElementById('timerSection').classList.remove('hidden');
+        timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000);
+        calculateWork();
+    }
+}
+function stopTimer() {
+    if (timerRunning) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2,'0');
+        const minutes = String(now.getMinutes()).padStart(2,'0');
+        document.getElementById('endTime').value = `${hours}:${minutes}`;
+        clearInterval(timerInterval);
+        timerRunning = false;
+        calculateWork();
+    }
+}
+function resetTimer() { clearInterval(timerInterval); timerRunning=false; timerSeconds=0; document.getElementById('timerDisplay').textContent='00:00:00'; document.getElementById('startTime').value=''; document.getElementById('endTime').value=''; }
+function updateTimerDisplay() { const h=Math.floor(timerSeconds/3600), m=Math.floor((timerSeconds%3600)/60), s=timerSeconds%60; document.getElementById('timerDisplay').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+
+// Cálculo
+function calculateWork() {
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const breakTime = parseInt(document.getElementById('breakTime').value)||0;
+    const hourlyRate = parseFloat(document.getElementById('hourlyRate').value)||0;
+    const dayType = document.getElementById('dayType').value;
+    if (!startTime||!endTime) return;
+
+    const [sh, sm]=startTime.split(':').map(Number);
+    const [eh, em]=endTime.split(':').map(Number);
+    let start=new Date(2000,0,1,sh,sm);
+    let end=new Date(2000,0,1,eh,em);
+    let diffMs=end-start;
+    if(diffMs<0) diffMs+=24*60*60*1000;
+    let totalMinutes=Math.floor(diffMs/(1000*60))-breakTime;
+    if(totalMinutes<0) totalMinutes=0;
+    const hours=Math.floor(totalMinutes/60);
+    const minutes=totalMinutes%60;
+
+    let multiplier=1;
+    if(dayType==='sunday') multiplier=2;
+    else if(dayType==='holiday') multiplier=3;
+
+    const multipliedMinutes=totalMinutes*multiplier;
+    const mHours=Math.floor(multipliedMinutes/60);
+    const mMinutes=multipliedMinutes%60;
+
+    const totalValue=(multipliedMinutes/60)*hourlyRate;
+
+    document.getElementById('totalHours').textContent=`${hours}h ${minutes}m`;
+    document.getElementById('multipliedHours').textContent=`${mHours}h ${mMinutes}m`;
+    document.getElementById('totalValue').textContent=`R$ ${totalValue.toFixed(2)}`;
+
+    document.getElementById('calculationDetails').innerHTML=`
+    <p>Horas trabalhadas: ${hours}h ${minutes}m</p>
+    <p>Horas com multiplicador (${multiplier}x): ${mHours}h ${mMinutes}m</p>
+    <p>Valor por hora: R$ ${hourlyRate.toFixed(2)}</p>
+    <p>Total a receber: R$ ${totalValue.toFixed(2)}</p>
+    `;
+}
+
+// Histórico
+function loadHistory() {
+    let entries=JSON.parse(localStorage.getItem('workEntries')||'[]');
+    const filter=document.getElementById('historyFilter').value;
+
+    if(filter==='normal'||filter==='sunday'||filter==='holiday') entries=entries.filter(e=>e.dayType===filter);
+    else if(filter==='last7') {
+        const today=new Date(); const weekAgo=new Date(today); weekAgo.setDate(today.getDate()-6);
+        entries=entries.filter(e=>{
+            const [y,m,d]=e.date.split('-').map(Number); const entryDate=new Date(y,m-1,d);
+            return entryDate>=weekAgo && entryDate<=today;
         });
-
-        // Timer variables
-        let timerInterval;
-        let timerSeconds = 0;
-        let timerRunning = false;
-
-        function startTimer() {
-            if (!timerRunning) {
-                const startTimeInput = document.getElementById('startTime');
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                startTimeInput.value = `${hours}:${minutes}`;
-                
-                timerRunning = true;
-                document.getElementById('timerSection').classList.remove('hidden');
-                
-                timerInterval = setInterval(() => {
-                    timerSeconds++;
-                    updateTimerDisplay();
-                }, 1000);
-                
-                calculateWork();
-            }
+    }
+    else if(filter==='month') {
+        const today=new Date(); const month=today.getMonth(), year=today.getFullYear();
+        entries=entries.filter(e=>{ const [y,m,d]=e.date.split('-').map(Number); return y===year && m-1===month; });
+    }
+    else if(filter==='range') {
+        const start=document.getElementById('startDate').value;
+        const end=document.getElementById('endDate').value;
+        if(start&&end) {
+            const [sy,sm,sd]=start.split('-').map(Number);
+            const [ey,em,ed]=end.split('-').map(Number);
+            const startDate=new Date(sy,sm-1,sd);
+            const endDate=new Date(ey,em-1,ed);
+            entries=entries.filter(e=>{ const [y,m,d]=e.date.split('-').map(Number); const entryDate=new Date(y,m-1,d); return entryDate>=startDate && entryDate<=endDate; });
         }
+    }
 
-        function stopTimer() {
-            if (timerRunning) {
-                const endTimeInput = document.getElementById('endTime');
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                endTimeInput.value = `${hours}:${minutes}`;
-                
-                clearInterval(timerInterval);
-                timerRunning = false;
-                
-                calculateWork();
-            }
-        }
+    const list=document.getElementById('historyList');
+    list.innerHTML='';
+    if(entries.length===0) list.innerHTML='<div class="text-center text-gray-500 py-4">Nenhum registro encontrado</div>';
+    else {
+        entries.forEach((e,i)=>{
+            const div=document.createElement('div');
+            div.className=`history-item flex justify-between items-center p-3 mb-2 rounded cursor-pointer ${e.dayType==='normal'?'day-normal':e.dayType==='sunday'?'day-sunday':'day-holiday'}`;
+            div.innerHTML=`<div>
+            <p class="font-semibold">${e.date}</p>
+            <p>${e.startTime} - ${e.endTime} | Pausa: ${e.breakTime}min</p>
+            <p>R$ ${e.totalValue.toFixed(2)}</p>
+            </div>
+            <button onclick="deleteEntry(${i})" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>`;
+            list.appendChild(div);
+        });
+    }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerRunning = false;
-            timerSeconds = 0;
-            document.getElementById('timerDisplay').textContent = '00:00:00';
-            document.getElementById('startTime').value = '';
-            document.getElementById('endTime').value = '';
-        }
+    const totalWorked=entries.reduce((acc,e)=>{
+        const [sh,sm]=e.startTime.split(':').map(Number);
+        const [eh,em]=e.endTime.split(':').map(Number);
+        let diff=(new Date(2000,0,1,eh,em)-new Date(2000,0,1,sh,sm))/60000-e.breakTime;
+        if(diff<0) diff+=24*60;
+        return acc+diff;
+    },0);
+    const totalHours=Math.floor(totalWorked/60);
+    const totalMinutes=Math.floor(totalWorked%60);
+    const totalEarned=entries.reduce((acc,e)=>acc+e.totalValue,0);
 
-        function updateTimerDisplay() {
-            const hours = Math.floor(timerSeconds / 3600);
-            const minutes = Math.floor((timerSeconds % 3600) / 60);
-            const seconds = timerSeconds % 60;
-            
-            document.getElementById('timerDisplay').textContent = 
-                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
+    document.getElementById('totalWorkedHours').textContent=`Total horas: ${totalHours}h ${totalMinutes}m`;
+    document.getElementById('totalEarned').textContent=`Total ganho: R$ ${totalEarned.toFixed(2)}`;
+}
 
-        function calculateWork() {
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
-            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
-            const dayType = document.getElementById('dayType').value;
-            
-            if (!startTime || !endTime) {
-                return;
-            }
-            
-            // Calcular horas trabalhadas
-            const startTime = "08:00";
-            const [hours, minutes] = startTime.split(':');
-            const start = new Date(2000, 0, 1, parseInt(hours), parseInt(minutes)); // mês = 0 (Janeiro)
+function saveEntry() {
+    const date=document.getElementById('workDate').value;
+    const startTime=document.getElementById('startTime').value;
+    const endTime=document.getElementById('endTime').value;
+    const breakTime=parseInt(document.getElementById('breakTime').value)||0;
+    const hourlyRate=parseFloat(document.getElementById('hourlyRate').value)||0;
+    const dayType=document.getElementById('dayType').value;
+    if(!date||!startTime||!endTime) return alert('Preencha data, hora de entrada e saída');
 
-            // Se horário final for menor que o inicial, assume que é no dia seguinte
-            let diffMs = end - start;
-            if (diffMs < 0) {
-                diffMs += 24 * 60 * 60 * 1000; // Adiciona 24 horas
-            }
-            
-            // Converter para horas e minutos
-            let totalMinutes = Math.floor(diffMs / (1000 * 60));
-            totalMinutes -= breakTime; // Desconta pausa
-            
-            if (totalMinutes < 0) totalMinutes = 0;
-            
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            
-            // Aplicar multiplicadores
-            let multiplier = 1;
-            let multipliedHours = totalMinutes / 60;
-            
-            if (dayType === 'sunday') {
-                multiplier = 2;
-                multipliedHours *= 2;
-            } else if (dayType === 'holiday') {
-                multiplier = 2.5;
-                multipliedHours *= 2.5;
-            }
-            
-            // Calcular valor total
-            const totalValue = (multipliedHours * hourlyRate).toFixed(2);
-            
-            // Atualizar a UI
-            document.getElementById('totalHours').textContent = `${hours}h ${minutes}m`;
-            document.getElementById('multipliedHours').textContent = multipliedHours.toFixed(2) + 'h';
-            document.getElementById('totalValue').textContent = `R$ ${totalValue}`;
-            
-            // Detalhes do cálculo
-            const details = `
-                <p><strong>Período trabalhado:</strong> ${startTime} até ${endTime}</p>
-                <p><strong>Horas brutas:</strong> ${Math.floor(diffMs / (1000 * 60 * 60))}h ${Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))}m</p>
-                <p><strong>Pausa:</strong> ${breakTime} minutos</p>
-                <p><strong>Horas líquidas:</strong> ${hours}h ${minutes}m</p>
-                <p><strong>Multiplicador:</strong> ${multiplier}x (${dayType === 'normal' ? 'Dia normal' : dayType === 'sunday' ? 'Domingo' : 'Feriado'})</p>
-                <p><strong>Cálculo:</strong> ${hours}h ${minutes}m × R$ ${hourlyRate.toFixed(2)} × ${multiplier} = R$ ${totalValue}</p>
-            `;
-            
-            document.getElementById('calculationDetails').innerHTML = details;
-        }
+    const [sh,sm]=startTime.split(':').map(Number);
+    const [eh,em]=endTime.split(':').map(Number);
+    let diff=(new Date(2000,0,1,eh,em)-new Date(2000,0,1,sh,sm))/60000-breakTime;
+    if(diff<0) diff+=24*60;
 
-        function saveEntry() {
-            // Validar campos obrigatórios
-            const date = document.getElementById('workDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            
-            if (!date || !startTime || !endTime) {
-                alert('Preencha a data, horário de entrada e saída!');
-                return;
-            }
-            
-            // Obter dados do formulário
-            const dayType = document.getElementById('dayType').value;
-            const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
-            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 50;
-            
-            // Calcular total
-            calculateWork();
-            const totalValue = document.getElementById('totalValue').textContent.replace('R$ ', '');
-            const totalHours = document.getElementById('totalHours').textContent;
-            const multipliedHours = document.getElementById('multipliedHours').textContent.replace('h', '');
-            
-            // Criar objeto do registro
-            const entry = {
-                id: Date.now(), // ID único
-                date: date,
-                dayType: dayType,
-                startTime: startTime,
-                endTime: endTime,
-                breakTime: breakTime,
-                hourlyRate: hourlyRate,
-                totalHours: totalHours,
-                multipliedHours: parseFloat(multipliedHours),
-                totalValue: parseFloat(totalValue)
-            };
-            
-            // Salvar no localStorage
-            let entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
-            entries.push(entry);
-            localStorage.setItem('workEntries', JSON.stringify(entries));
-            
-            // Recarregar histórico
-            loadHistory();
-            
-            // Limpar para novo registro
-            document.getElementById('endTime').value = '';
-            if (!timerRunning) {
-                document.getElementById('startTime').value = '';
-            }
-            document.getElementById('breakTime').value = '0';
-            
-            alert('Registro salvo com sucesso!');
-        }
+    let multiplier=1; if(dayType==='sunday') multiplier=2; else if(dayType==='holiday') multiplier=3;
+    const totalValue=(diff*multiplier/60)*hourlyRate;
 
-        function loadHistory() {
-            const filter = document.getElementById('historyFilter').value;
-            let entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
-            
-            // Aplicar filtros
-            if (filter === 'normal') {
-                entries = entries.filter(entry => entry.dayType === 'normal');
-            } else if (filter === 'sunday') {
-                entries = entries.filter(entry => entry.dayType === 'sunday');
-            } else if (filter === 'holiday') {
-                entries = entries.filter(entry => entry.dayType === 'holiday');
-            } else if (filter === 'last7') {
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                entries = entries.filter(entry => new Date(entry.date) >= sevenDaysAgo);
-            } else if (filter === 'month') {
-                const today = new Date();
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                entries = entries.filter(entry => new Date(entry.date) >= firstDay);
-            } else if (filter === 'range') {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                if (startDate && endDate) {
-                    entries = entries.filter(entry => {
-                        const entryDate = new Date(entry.date);
-                        return entryDate >= new Date(startDate) && 
-                               entryDate <= new Date(endDate);
-                    });
-                }
-            }
-            
-            // Ordenar por data (mais recente primeiro)
-            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Atualizar totais
-            updateTotals(entries);
-            
-            // Exibir histórico
-            const historyList = document.getElementById('historyList');
-            
-            if (entries.length === 0) {
-                historyList.innerHTML = '<div class="text-center text-gray-500 py-4">Nenhum registro encontrado</div>';
-                return;
-            }
-            
-            historyList.innerHTML = entries.map(entry => `
-                <div class="history-item mb-3 p-3 border border-gray-200 rounded-md transition-all ${'day-' + entry.dayType}">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <strong>${formatDate(entry.date)}</strong>
-                            <p class="text-sm">${getDayTypeName(entry.dayType)}</p>
-                            <p class="text-xs">${entry.startTime} - ${entry.endTime} (${entry.breakTime}m de pausa)</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-semibold">R$ ${entry.totalValue.toFixed(2)}</p>
-                            <p class="text-sm">${entry.totalHours}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-end mt-1">
-                        <button onclick="deleteEntry(${entry.id})" class="text-xs text-red-500 hover:text-red-700 ml-2">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
+    const entry={date,startTime,endTime,breakTime,hourlyRate,dayType,totalValue};
+    const entries=JSON.parse(localStorage.getItem('workEntries')||'[]');
+    entries.push(entry);
+    localStorage.setItem('workEntries',JSON.stringify(entries));
+    alert('Registro salvo com sucesso!');
+    loadHistory();
+}
 
-        function updateTotals(entries) {
-            const totalHours = entries.reduce((sum, entry) => sum + entry.multipliedHours, 0);
-            const totalEarned = entries.reduce((sum, entry) => sum + entry.totalValue, 0);
-            
-            document.getElementById('totalWorkedHours').textContent = `Total horas: ${totalHours.toFixed(2)}h`;
-            document.getElementById('totalEarned').textContent = `Total ganho: R$${totalEarned.toFixed(2)}`;
-        }
+// Deletar
+function deleteEntry(index){
+    let entries=JSON.parse(localStorage.getItem('workEntries')||'[]');
+    if(confirm('Deseja realmente apagar este registro?')) {
+        entries.splice(index,1);
+        localStorage.setItem('workEntries',JSON.stringify(entries));
+        loadHistory();
+    }
+}
 
-        function deleteEntry(id) {
-            if (confirm('Tem certeza que deseja excluir este registro?')) {
-                let entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
-                entries = entries.filter(entry => entry.id !== id);
-                localStorage.setItem('workEntries', JSON.stringify(entries));
-                loadHistory();
-            }
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR');
-        }
-
-        function getDayTypeName(dayType) {
-            return {
-                'normal': 'Dia normal',
-                'sunday': 'Domingo',
-                'holiday': 'Feriado'
-            }[dayType];
-        }
-
-        function exportToPDF() {
-            try {
-                const { jsPDF } = window.jspdf;
-                if (!jsPDF) {
-                    alert('Erro: jsPDF não está carregado corretamente');
-                    return;
-                }
-                const doc = new jsPDF();
-                
-                // Cabeçalho da folha de ponto
-                doc.setFontSize(16);
-                doc.setFont(undefined, 'bold');
-                doc.text('Folha de Ponto', 105, 15, { align: 'center' });
-                
-                doc.setFontSize(12);
-                doc.text('Nome: ___________________________', 20, 25);
-                doc.text(`Período: ${document.getElementById('startDate').value || 'Início'} a ${document.getElementById('endDate').value || 'Fim'}`, 20, 35);
-                
-                // Linha separadora (simplificada)
-                doc.setDrawColor(0);
-                doc.setLineWidth(0.5);
-                doc.line(13, 45, 197, 45);
-                
-                // Cabeçalho da tabela
-                doc.setFontSize(10);
-                doc.setFont(undefined, 'bold');
-                doc.text('Data', 14, 55);
-                doc.text('Dia', 40, 55);
-                doc.text('Entrada', 60, 55);
-                doc.text('Saída', 80, 55);
-                doc.text('Pausa', 100, 55);
-                doc.text('Horas', 120, 55);
-                doc.text('Valor', 140, 55);
-                doc.text('Total', 160, 55);
-                
-                // Linha do cabeçalho
-                doc.line(13, 58, 197, 58);
-                
-                // Dados
-                doc.setFont(undefined, 'normal');
-                const entries = JSON.parse(localStorage.getItem('workEntries') || '[]');
-                let y = 65;
-                let totalEarned = 0;
-                
-                entries.forEach(entry => {
-                    if (y > 250) { // Nova página se necessário
-                        doc.addPage();
-                        y = 20;
-                        // Repetir cabeçalho
-                        doc.setFontSize(10);
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Data', 14, y);
-                        doc.text('Dia', 40, y);
-                        doc.text('Entrada', 60, y);
-                        doc.text('Saída', 80, y);
-                        doc.text('Pausa', 100, y);
-                        doc.text('Horas', 120, y);
-                        doc.text('Valor', 140, y);
-                        doc.text('Total', 160, y);
-                        doc.line(13, y+3, 197, y+3);
-                        y += 10;
-                    }
-                    
-                    const rowData = [
-                        formatDate(entry.date),
-                        getDayTypeName(entry.dayType),
-                        entry.startTime,
-                        entry.endTime,
-                        `${entry.breakTime}m`,
-                        entry.totalHours,
-                        `R$ ${entry.hourlyRate.toFixed(2)}`,
-                        `R$ ${entry.totalValue.toFixed(2)}`
-                    ];
-                    
-                    colX = 15;
-                    rowData.forEach((text, i) => {
-                        doc.text(text, colX, y);
-                        colX += i < 3 ? 20 : 25;
-                    });
-                    
-                    totalEarned += entry.totalValue;
-                    y += 10;
-                });
-                
-                // Totalizador e assinatura
-                doc.line(13, y+5, 197, y+5);
-                doc.setFont(undefined, 'bold');
-                // Totalizador
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('TOTAL:', 120, y+10);
-                doc.text(`R$ ${totalEarned.toFixed(2)}`, 160, y+10);
-                
-                // Assinatura
-                doc.text('____________________________', 60, y+30);
-                doc.text('Assinatura do Responsável', 75, y+40);
-                
-                try {
-                    // Salvar o PDF
-                    doc.save(`FolhaPonto_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
-                } catch (e) {
-                    alert('Erro ao gerar PDF: ' + e.message);
-                    console.error(e);
-                }
-            } catch (e) {
-                alert('Ocorreu um erro: ' + e.message);
-                console.error(e);
-            }
-        }
-    </script>
+// PDF
+async function exportToPDF() {
+    const history=document.getElementById('historyList');
+    if(history.innerHTML.trim()==='Nenhum registro encontrado') return alert('Nenhum registro para exportar');
+    const canvas=await html2canvas(history);
+    const imgData=canvas.toDataURL('image/png');
+    const pdf=new jspdf.jsPDF();
+    const imgProps=pdf.getImageProperties(imgData);
+    const pdfWidth=pdf.internal.pageSize.getWidth();
+    const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width;
+    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
+    pdf.save('historico.pdf');
+}
+</script>
 </body>
 </html>
